@@ -13,24 +13,13 @@ import {
 } from '@mui/material';
 import {
   Speed,
-  ShoppingBagOutlined,
-  AnalyticsOutlined,
-  AccountBalanceOutlined,
   FlightOutlined,
-  DescriptionOutlined,
-  OndemandVideoOutlined,
-  PersonOutline,
-  CheckroomOutlined,
-  ShoppingCartOutlined,
-  ReceiptLongOutlined,
-  ArticleOutlined,
-  WorkOutline,
   ExpandLess,
   ExpandMore,
   Adjust,
 } from '@mui/icons-material';
 
-const drawerWidth = 280;
+const drawerWidth = 240;
 
 interface MenuItem {
   title: string;
@@ -48,43 +37,8 @@ const menuItems: MenuSection[] = [
   {
     subheader: 'OVERVIEW',
     items: [
-      { title: 'App', icon: <Speed />, path: '/app' },
-      {
-        title: 'E-commerce',
-        icon: <ShoppingBagOutlined />,
-        path: '/ecommerce',
-      },
-      { title: 'Analytics', icon: <AnalyticsOutlined />, path: '/analytics' },
-      { title: 'Banking', icon: <AccountBalanceOutlined />, path: '/banking' },
-      { title: 'Booking', icon: <FlightOutlined />, path: '/booking' },
-      { title: 'File', icon: <DescriptionOutlined />, path: '/file' },
-      { title: 'Course', icon: <OndemandVideoOutlined />, path: '/course' },
-    ],
-  },
-  {
-    subheader: 'MANAGEMENT',
-    items: [
-      { title: 'User', icon: <PersonOutline />, path: '/user', hasSubmenu: true },
-      {
-        title: 'Product',
-        icon: <CheckroomOutlined />,
-        path: '/product',
-        hasSubmenu: true,
-      },
-      {
-        title: 'Order',
-        icon: <ShoppingCartOutlined />,
-        path: '/order',
-        hasSubmenu: true,
-      },
-      {
-        title: 'Invoice',
-        icon: <ReceiptLongOutlined />,
-        path: '/invoice',
-        hasSubmenu: true,
-      },
-      { title: 'Blog', icon: <ArticleOutlined />, path: '/blog', hasSubmenu: true },
-      { title: 'Job', icon: <WorkOutline />, path: '/job', hasSubmenu: true },
+      { title: '首页', icon: <Speed />, path: '/app' },
+      { title: '活动配置', icon: <FlightOutlined />, path: '/activity' },
     ],
   },
 ];
@@ -96,7 +50,12 @@ interface NavItemProps {
   handleClick: (item: MenuItem) => void;
 }
 
-function NavItem({ item, isActive, open, handleClick }: NavItemProps): React.ReactElement {
+function NavItem({
+  item,
+  isActive,
+  open,
+  handleClick,
+}: NavItemProps): React.ReactElement {
   const navigate = useNavigate();
 
   const handleNavigate = () => {
@@ -207,7 +166,7 @@ function Sidebar(): React.ReactElement {
         </Typography>
       </Box>
       <List
-        sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}
+        sx={{ width: '100%', maxWidth: 360, bgcolor: 'transparent' }}
         component="nav"
         aria-labelledby="nested-list-subheader"
       >

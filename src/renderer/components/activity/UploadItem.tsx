@@ -1,0 +1,162 @@
+import React, { useState, useRef } from 'react';
+import { Paper, Typography, CircularProgress, Backdrop } from '@mui/material';
+import ImageIcon from '@mui/icons-material/Image';
+
+interface Preset {
+  id: string;
+  name: string;
+  key: string;
+}
+
+export interface UploadItemProps {
+  preset: Preset;
+  imageUrl: string | null;
+  isLoading: boolean;
+  onImageUpload: (key: string, file: File) => void;
+}
+
+function UploadItem({
+  preset,
+  imageUrl,
+  isLoading,
+  onImageUpload,
+}: UploadItemProps): React.ReactElement {
+  const [isDragging, setIsDragging] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFile = (file: File | null) => {
+    if (file && file.type.startsWith('image/')) {
+      onImageUpload(preset.key, file);
+    }
+  };
+
+  const handleClick = () => {
+    if (isLoading) return;
+    fileInputRef.current?.click();
+  };
+
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    if (isLoading) return;
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    if (isLoading) return;
+    setIsDragging(false);
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      handleFile(e.dataTransfer.files[0]);
+    }
+  };
+
+  const handlePaste = (e: React.ClipboardEvent<HTMLDivElement>) => {
+    if (isLoading) return;
+    const { items } = e.clipboardData;
+    for (let i = 0; i < items.length; i += 1) {
+      if (items[i].kind === 'file' && items[i].type.startsWith('image/')) {
+        const file = items[i].getAsFile();
+        handleFile(file);
+        break;
+      }
+    }
+  };
+
+  return (
+    <Paper
+      variant="outlined"
+      onClick={handleClick}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+      onPaste={handlePaste}
+      tabIndex={0} // Make focusable for paste
+      sx={{
+        p: 2,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        width: 120,
+        height: 100,
+        cursor: isLoading ? 'progress' : 'pointer',
+        borderColor: isDragging ? 'primary.main' : 'rgba(0, 0, 0, 0.1)',
+        borderWidth: isDragging ? '2px' : '1px',
+        borderRadius: 2.5,
+        backgroundColor: 'rgba(255, 255, 255, 0.6)',
+        position: 'relative',
+        overflow: 'hidden',
+        '&:hover': {
+          backgroundColor: 'rgba(255, 255, 255, 1)',
+          boxShadow: '0 4px 8px rgba(0,0,0,0.05)',
+        },
+        '&:focus-visible': {
+          outline: '2px solid',
+          outlineColor: 'primary.main',
+          outlineOffset: '2px',
+        },
+      }}
+    >
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={(e) => handleFile(e.target.files ? e.target.files[0] : null)}
+        accept="image/*"
+        style={{ display: 'none' }}
+      />
+      {isLoading && (
+        <Backdrop
+          open
+          sx={{
+            position: 'absolute',
+            color: '#fff',
+            zIndex: (theme) => theme.zIndex.drawer + 1,
+            backgroundColor: 'rgba(0, 0, 0, 0.3)',
+          }}
+        >
+          <CircularProgress color="inherit" size={30} />
+        </Backdrop>
+      )}
+      {imageUrl && !isLoading ? (
+        <img
+          src={imageUrl}
+          alt={preset.name}
+          style={{
+            width: '100%',
+            height: '100%',
+            objectFit: 'contain',
+            position: 'absolute',
+          }}
+        />
+      ) : (
+        !isLoading && (
+          <>
+            <ImageIcon sx={{ fontSize: 40, color: 'rgb(0, 167, 111)' }} />
+            <Typography
+              variant="caption"
+              sx={{
+                mt: 1,
+                textAlign: 'center',
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                width: '100%',
+                position: 'relative',
+                zIndex: 1,
+              }}
+            >
+              {preset.name}
+            </Typography>
+          </>
+        )
+      )}
+    </Paper>
+  );
+}
+
+export default UploadItem;

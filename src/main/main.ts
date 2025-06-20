@@ -12,6 +12,8 @@ import path from 'path';
 import { app, BrowserWindow, shell, ipcMain } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
+import sharp from 'sharp';
+import FormData from 'form-data';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
 
@@ -30,6 +32,64 @@ ipcMain.on('ipc-example', async (event, arg) => {
   console.log(msgTemplate(arg));
   event.reply('ipc-example', msgTemplate('pong'));
 });
+
+ipcMain.handle(
+  'compress-and-upload',
+  async (
+    _,
+    payload: { type: 'path' | 'buffer'; data: string | Buffer },
+    quality: number = 80,
+  ) => {
+    // Dynamically import node-fetch
+    const fetch = (await import('node-fetch')).default;
+
+    try {
+      // sharp can handle both a path (string) and a buffer
+      const imageInput = payload.data;
+      const compressedImageBuffer = await sharp(imageInput)
+        .jpeg({ quality })
+        .toBuffer();
+
+      const formData = new FormData();
+      formData.append('user_id', '5D221069-DA5D-42F3-83DA-E81F35DCD3CF');
+      formData.append('file', compressedImageBuffer, {
+        filename: 'compressed-image.jpg',
+        contentType: 'image/jpeg',
+      });
+
+      const response = await fetch(
+        'https://aidreamface.com/df-server/phone_file_v2/upload_file',
+        {
+          method: 'POST',
+          body: formData,
+        },
+      );
+
+      if (!response.ok) {
+        throw new Error(`API error! status: ${response.status}`);
+      }
+
+      // Explicitly type the result from the API
+      const result: any = await response.json();
+
+      if (result.status_code !== 'THS12140000000') {
+        throw new Error(result.status_msg || 'API returned an error');
+      }
+
+      return {
+        success: true,
+        filePath: result.data.file_path,
+        previewData: compressedImageBuffer.toString('base64'),
+      };
+    } catch (error) {
+      console.error('Compression and upload failed:', error);
+      // Type assertion for the caught error
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      return { success: false, error: errorMessage };
+    }
+  },
+);
 
 if (process.env.NODE_ENV === 'production') {
   const sourceMapSupport = require('source-map-support');
