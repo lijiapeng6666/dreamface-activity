@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { Paper, Typography, CircularProgress, Backdrop } from '@mui/material';
 import ImageIcon from '@mui/icons-material/Image';
+import useUploadStore from '../../store/uploadStore';
 
 interface Preset {
   id: string;
@@ -23,6 +24,9 @@ function UploadItem({
 }: UploadItemProps): React.ReactElement {
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const setHoveredUploadKey = useUploadStore(
+    (state) => state.setHoveredUploadKey,
+  );
 
   const handleFile = (file: File | null) => {
     if (file && file.type.startsWith('image/')) {
@@ -55,18 +59,6 @@ function UploadItem({
     }
   };
 
-  const handlePaste = (e: React.ClipboardEvent<HTMLDivElement>) => {
-    if (isLoading) return;
-    const { items } = e.clipboardData;
-    for (let i = 0; i < items.length; i += 1) {
-      if (items[i].kind === 'file' && items[i].type.startsWith('image/')) {
-        const file = items[i].getAsFile();
-        handleFile(file);
-        break;
-      }
-    }
-  };
-
   return (
     <Paper
       variant="outlined"
@@ -74,8 +66,8 @@ function UploadItem({
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
-      onPaste={handlePaste}
-      tabIndex={0} // Make focusable for paste
+      onMouseEnter={() => setHoveredUploadKey(preset.key)}
+      onMouseLeave={() => setHoveredUploadKey(null)}
       sx={{
         p: 2,
         display: 'flex',

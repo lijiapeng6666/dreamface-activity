@@ -1,6 +1,7 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { Box } from '@mui/material';
 import UploadItem from './UploadItem';
+import useUploadStore from '../../store/uploadStore';
 
 // Define Preset interface locally or import from a shared types file
 interface Preset {
@@ -25,6 +26,8 @@ function PresetGallery({
 
   const handleImageUpload = useCallback(
     async (key: string, file: File) => {
+      // Prevent re-uploading if already in progress
+      if (loadingKeys.has(key)) return;
       setLoadingKeys((prev) => new Set(prev).add(key));
 
       try {
@@ -60,8 +63,37 @@ function PresetGallery({
         });
       }
     },
-    [onUploadSuccess],
+    [onUploadSuccess, loadingKeys],
   );
+
+  useEffect(() => {
+    const handleGlobalPaste = (event: ClipboardEvent) => {
+      const hoveredKey = useUploadStore.getState().hoveredUploadKey;
+
+      if (!hoveredKey) {
+        return;
+      }
+
+      const { items } = event.clipboardData || {};
+      if (!items) return;
+
+      for (let i = 0; i < items.length; i += 1) {
+        if (items[i].kind === 'file' && items[i].type.startsWith('image/')) {
+          const file = items[i].getAsFile();
+          if (file) {
+            handleImageUpload(hoveredKey, file);
+          }
+          break;
+        }
+      }
+    };
+
+    window.addEventListener('paste', handleGlobalPaste);
+
+    return () => {
+      window.removeEventListener('paste', handleGlobalPaste);
+    };
+  }, [handleImageUpload]);
 
   return (
     <Box
