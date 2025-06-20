@@ -2,7 +2,7 @@
 /* eslint no-unused-vars: off */
 import { contextBridge, ipcRenderer, IpcRendererEvent } from 'electron';
 
-export type Channels = 'ipc-example';
+export type Channels = 'ipc-example' | 'compress-and-upload' | 'compress-only';
 
 const electronHandler = {
   ipcRenderer: {
@@ -27,6 +27,13 @@ const electronHandler = {
   },
 };
 
+// 添加调试日志
+console.log('Preload script is running...');
+console.log('electronHandler:', electronHandler);
+
 contextBridge.exposeInMainWorld('electron', electronHandler);
+
+// 验证暴露是否成功
+console.log('Context bridge exposed electron to main world');
 
 export type ElectronHandler = typeof electronHandler;
