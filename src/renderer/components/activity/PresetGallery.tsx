@@ -13,11 +13,13 @@ interface Preset {
 interface PresetGalleryProps {
   presets: Preset[];
   onUploadSuccess: (key: string, filePath: string) => void;
+  onImageRemove: (key: string) => void;
 }
 
 function PresetGallery({
   presets,
   onUploadSuccess,
+  onImageRemove,
 }: PresetGalleryProps): React.ReactElement {
   const [imagePreviews, setImagePreviews] = useState<Record<string, string>>(
     {},
@@ -66,6 +68,17 @@ function PresetGallery({
     [onUploadSuccess, loadingKeys],
   );
 
+  const handleImageRemove = (key: string) => {
+    // Remove from local preview state
+    setImagePreviews((prev) => {
+      const next = { ...prev };
+      delete next[key];
+      return next;
+    });
+    // Notify parent to remove from its state
+    onImageRemove(key);
+  };
+
   useEffect(() => {
     const handleGlobalPaste = (event: ClipboardEvent) => {
       const hoveredKey = useUploadStore.getState().hoveredUploadKey;
@@ -111,6 +124,7 @@ function PresetGallery({
           isLoading={loadingKeys.has(preset.key)}
           imageUrl={imagePreviews[preset.key] || null}
           onImageUpload={handleImageUpload}
+          onImageRemove={handleImageRemove}
         />
       ))}
     </Box>

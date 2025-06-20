@@ -28,6 +28,14 @@ function ActivityPage(): React.ReactElement {
     // console.log('File paths updated:', { ...uploadedFilePaths, [key]: filePath });
   };
 
+  const handleImageRemove = (key: string) => {
+    setUploadedFilePaths((prev) => {
+      const next = { ...prev };
+      delete next[key];
+      return next;
+    });
+  };
+
   return (
     <Paper
       elevation={0}
@@ -41,6 +49,7 @@ function ActivityPage(): React.ReactElement {
         <PresetGallery
           presets={presets}
           onUploadSuccess={handleUploadSuccess}
+          onImageRemove={handleImageRemove}
         />
         <ControlPanel uploadedFilePaths={uploadedFilePaths} />
       </Stack>

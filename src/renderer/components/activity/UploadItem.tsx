@@ -1,6 +1,13 @@
 import React, { useState, useRef } from 'react';
-import { Paper, Typography, CircularProgress, Backdrop } from '@mui/material';
+import {
+  Paper,
+  Typography,
+  CircularProgress,
+  Backdrop,
+  IconButton,
+} from '@mui/material';
 import ImageIcon from '@mui/icons-material/Image';
+import CloseIcon from '@mui/icons-material/Close';
 import useUploadStore from '../../store/uploadStore';
 
 interface Preset {
@@ -14,6 +21,7 @@ export interface UploadItemProps {
   imageUrl: string | null;
   isLoading: boolean;
   onImageUpload: (key: string, file: File) => void;
+  onImageRemove: (key: string) => void;
 }
 
 function UploadItem({
@@ -21,6 +29,7 @@ function UploadItem({
   imageUrl,
   isLoading,
   onImageUpload,
+  onImageRemove,
 }: UploadItemProps): React.ReactElement {
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -57,6 +66,11 @@ function UploadItem({
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
       handleFile(e.dataTransfer.files[0]);
     }
+  };
+
+  const handleRemoveClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.stopPropagation();
+    onImageRemove(preset.key);
   };
 
   return (
@@ -101,6 +115,26 @@ function UploadItem({
         accept="image/*"
         style={{ display: 'none' }}
       />
+      {imageUrl && !isLoading && (
+        <IconButton
+          aria-label="delete"
+          onClick={handleRemoveClick}
+          sx={{
+            position: 'absolute',
+            top: 2,
+            right: 2,
+            zIndex: 2,
+            backgroundColor: 'rgba(0, 0, 0, 0.3)',
+            color: 'white',
+            padding: '2px',
+            '&:hover': {
+              backgroundColor: 'rgba(27, 17, 17, 0.5)',
+            },
+          }}
+        >
+          <CloseIcon fontSize="small" sx={{ fontSize: '12px' }} />
+        </IconButton>
+      )}
       {isLoading && (
         <Backdrop
           open

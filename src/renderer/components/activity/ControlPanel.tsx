@@ -68,8 +68,10 @@ function ControlPanel({
   const [aiVideoId, setAiVideoId] = useState('');
   const [bgColor, setBgColor] = useState('');
   const [fontColor, setFontColor] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
+    setIsSubmitting(true);
     const {
       titleBanner,
       livePhotoBanner,
@@ -79,21 +81,49 @@ function ControlPanel({
       twitterIcon,
       tiktokIcon,
     } = uploadedFilePaths;
-    const submissionData = {
-      aigcId,
-      livePhotoId,
-      aiVideoId,
-      bgColor,
-      fontColor,
-      titleBanner,
-      livePhotoBanner,
-      aiVideoBanner,
-      aigcBanner,
-      instagramIcon,
-      twitterIcon,
-      tiktokIcon,
+
+    const apiPayload = {
+      inputs: {
+        bg_color: bgColor,
+        title_banner: titleBanner,
+        banner1_url: livePhotoBanner,
+        live_photo_template_id: livePhotoId,
+        banner2_url: aiVideoBanner,
+        ai_video_template_id: aiVideoId,
+        banner3_url: aigcBanner,
+        aigc_template_id: aigcId,
+        font_color: fontColor,
+        instagram_icon: instagramIcon,
+        twitter_icon: twitterIcon,
+        tiktok_icon: tiktokIcon,
+      },
+      response_mode: 'blocking',
+      user: 'lijiapeng',
     };
-    console.log('Submitting Data:', submissionData);
+
+    console.log('Submitting Data to Workflow:', apiPayload);
+
+    try {
+      const response = await fetch(
+        'https://agent-x.myhexin.com/v1/workflows/run',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: 'Bearer app-5sqQbt4CedbJ70MVoKKamYaQ',
+          },
+          body: JSON.stringify(apiPayload),
+        },
+      );
+
+      const result = await response.json();
+      console.log('Workflow API Response:', result);
+      // Handle success/error based on the response here
+    } catch (error) {
+      console.error('Workflow API call failed:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -133,6 +163,7 @@ function ControlPanel({
           variant="contained"
           size="large"
           onClick={handleSubmit}
+          disabled={isSubmitting}
           sx={{
             borderRadius: '12px',
             textTransform: 'none',
@@ -141,7 +172,7 @@ function ControlPanel({
             fontWeight: 'bold',
           }}
         >
-          提交
+          {isSubmitting ? '提交中...' : '提交'}
         </Button>
       </Box>
     </Stack>
