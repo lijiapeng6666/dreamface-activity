@@ -35,7 +35,7 @@ interface MenuSection {
 
 const menuItems: MenuSection[] = [
   {
-    subheader: 'OVERVIEW',
+    subheader: '导航栏',
     items: [
       { title: '首页', icon: <Speed />, path: '/app' },
       { title: '活动配置', icon: <FlightOutlined />, path: '/activity' },
@@ -162,7 +162,7 @@ function Sidebar(): React.ReactElement {
           <Adjust sx={{ color: '#00A76F' }} />
         </Box>
         <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
-          Minimal
+          卡皮巴拉
         </Typography>
       </Box>
       <List
