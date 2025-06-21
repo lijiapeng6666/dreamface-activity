@@ -1,5 +1,14 @@
-import React, { useState } from 'react';
-import { Stack, TextField, Button, Typography, Box } from '@mui/material';
+import React, { useState, useEffect } from 'react';
+import {
+  Stack,
+  TextField,
+  Button,
+  Typography,
+  Box,
+  Snackbar,
+  Alert,
+} from '@mui/material';
+import mockData from './mockData.json';
 
 interface LabeledTextFieldProps {
   label: string;
@@ -69,6 +78,29 @@ function ControlPanel({
   const [bgColor, setBgColor] = useState('');
   const [fontColor, setFontColor] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [toastQueue, setToastQueue] = useState<string[]>([]);
+  const [toast, setToast] = useState<{ open: boolean; message: string }>({
+    open: false,
+    message: '',
+  });
+
+  useEffect(() => {
+    if (toastQueue.length > 0 && !toast.open) {
+      const newMessage = toastQueue[0];
+      setToast({ open: true, message: newMessage });
+      setToastQueue((prev) => prev.slice(1));
+    }
+  }, [toastQueue, toast.open]);
+
+  const handleToastClose = (
+    _event?: React.SyntheticEvent | Event,
+    reason?: string,
+  ) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+    setToast({ open: false, message: '' });
+  };
 
   const handleSubmit = async () => {
     setIsSubmitting(true);
@@ -104,21 +136,72 @@ function ControlPanel({
     console.log('Submitting Data to Workflow:', apiPayload);
 
     try {
-      const response = await fetch(
-        'https://agent-x.myhexin.com/v1/workflows/run',
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: 'Bearer app-5sqQbt4CedbJ70MVoKKamYaQ',
-          },
-          body: JSON.stringify(apiPayload),
-        },
-      );
-
-      const result = await response.json();
-      console.log('Workflow API Response:', result);
+      // const response = await fetch(
+      //   'https://agent-x.myhexin.com/v1/workflows/run',
+      //   {
+      //     method: 'POST',
+      //     headers: {
+      //       'Content-Type': 'application/json',
+      //       Authorization: 'Bearer app-5sqQbt4CedbJ70MVoKKamYaQ',
+      //     },
+      //     body: JSON.stringify(apiPayload),
+      //   },
+      // );
+      //
+      // const result = await response.json();
+      // console.log('Workflow API Response:', result);
       // Handle success/error based on the response here
+      // Simulate API call with mock data
+      const result: any = await new Promise((resolve) => {
+        setTimeout(() => {
+          resolve(mockData.data.outputs);
+        }, 1000); // 1-second delay to simulate network
+      });
+
+      console.log('Workflow API Response:', result);
+
+      if (result) {
+        if (result.final_config) {
+          try {
+            const formattedConfig = JSON.stringify(
+              JSON.parse(result.final_config),
+              null,
+              2,
+            );
+            // Call main process to upload the JSON file
+            const uploadedPath = await window.electron.ipcRenderer.invoke(
+              'upload-json',
+              formattedConfig,
+            );
+            // 切出 server/aigc/main/ba6edcecedf4445a8896a318f81a4139.json 后面的 hash 值
+            const hash = uploadedPath.split('/').pop();
+            // 去掉 .json
+            const hashWithoutJson = hash?.replace('.json', '');
+
+            // 拼接结果地址
+            // 海外地址
+            // https://dreamfaceapp.com/activity/weekly.html?darkMode=true&hideTitleBar=true&hashData=80acd651dc964e659cee9e284c11de47
+            const overseasUrl = `https://dreamfaceapp.com/activity/weekly.html?darkMode=true&hideTitleBar=true&hashData=${hashWithoutJson}`;
+            // 国内地址
+            // https://aidreamface.com/activity/weekly.html?darkMode=true&hideTitleBar=true&hashData=80acd651dc964e659cee9e284c11de47
+            const domesticUrl = `https://aidreamface.com/activity/weekly.html?darkMode=true&hideTitleBar=true&hashData=${hashWithoutJson}`;
+            // 将结果复制到剪贴板
+            navigator.clipboard.writeText(
+              `海外地址: ${overseasUrl}, 国内地址: ${domesticUrl}`,
+            );
+            setToastQueue((prev) => [
+              ...prev,
+              `已生成活动链接，已复制到剪贴板`,
+            ]);
+          } catch (e) {
+            const errorMessage = e instanceof Error ? e.message : String(e);
+            setToastQueue((prev) => [
+              ...prev,
+              `配置处理或上传失败: ${errorMessage}`,
+            ]);
+          }
+        }
+      }
     } catch (error) {
       console.error('Workflow API call failed:', error);
     } finally {
@@ -175,6 +258,20 @@ function ControlPanel({
           {isSubmitting ? '提交中...' : '提交'}
         </Button>
       </Box>
+      <Snackbar
+        open={toast.open}
+        autoHideDuration={6000}
+        onClose={handleToastClose}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert
+          onClose={handleToastClose}
+          severity="info"
+          sx={{ width: '100%' }}
+        >
+          {toast.message}
+        </Alert>
+      </Snackbar>
     </Stack>
   );
 }
