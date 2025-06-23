@@ -7,7 +7,7 @@ class ImageCompressor {
   ): Promise<Buffer> {
     try {
       const compressedImageBuffer = await sharp(input)
-        .jpeg({ quality })
+        .png({ quality, compressionLevel: 9 })
         .toBuffer();
 
       return compressedImageBuffer;
@@ -18,7 +18,9 @@ class ImageCompressor {
     }
   }
 
-  static async getImageInfo(input: string | Buffer): Promise<sharp.Metadata> {
+  static async getImageMetadata(
+    input: string | Buffer,
+  ): Promise<sharp.Metadata> {
     try {
       const metadata = await sharp(input).metadata();
       return metadata;

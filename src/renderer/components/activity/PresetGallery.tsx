@@ -49,7 +49,7 @@ function PresetGallery({
         );
 
         if (result.success) {
-          const previewUrl = `data:image/jpeg;base64,${result.previewData}`;
+          const previewUrl = `data:image/png;base64,${result.previewData}`;
           setImagePreviews((prev) => ({ ...prev, [key]: previewUrl }));
           onUploadSuccess(key, result.filePath);
         } else {

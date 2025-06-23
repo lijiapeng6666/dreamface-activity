@@ -7,6 +7,6 @@ export const DEFAULT_UPLOAD_CONFIG: UploadConfig = {
   contentType: 'image/jpeg',
 };
 
-export const DEFAULT_QUALITY = 80;
+export const DEFAULT_QUALITY = 50;
 
 export const SUCCESS_STATUS_CODE = 'THS12140000000';

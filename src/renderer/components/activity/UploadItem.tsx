@@ -94,11 +94,11 @@ function UploadItem({
         borderColor: isDragging ? 'primary.main' : 'rgba(0, 0, 0, 0.1)',
         borderWidth: isDragging ? '2px' : '1px',
         borderRadius: 2.5,
-        backgroundColor: 'rgba(255, 255, 255, 0.6)',
+        backgroundColor: imageUrl ? 'grey.200' : 'rgba(255, 255, 255, 0.6)',
         position: 'relative',
         overflow: 'hidden',
         '&:hover': {
-          backgroundColor: 'rgba(255, 255, 255, 1)',
+          backgroundColor: imageUrl ? 'grey.300' : 'rgba(255, 255, 255, 1)',
           boxShadow: '0 4px 8px rgba(0,0,0,0.05)',
         },
         '&:focus-visible': {
