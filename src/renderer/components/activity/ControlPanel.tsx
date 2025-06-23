@@ -8,7 +8,7 @@ import {
   Snackbar,
   Alert,
 } from '@mui/material';
-import mockData from './mockData.json';
+// import mockData from './mockData.json';
 
 interface LabeledTextFieldProps {
   label: string;
@@ -136,35 +136,36 @@ function ControlPanel({
     console.log('Submitting Data to Workflow:', apiPayload);
 
     try {
-      // const response = await fetch(
-      //   'https://agent-x.myhexin.com/v1/workflows/run',
-      //   {
-      //     method: 'POST',
-      //     headers: {
-      //       'Content-Type': 'application/json',
-      //       Authorization: 'Bearer app-5sqQbt4CedbJ70MVoKKamYaQ',
-      //     },
-      //     body: JSON.stringify(apiPayload),
-      //   },
-      // );
-      //
-      // const result = await response.json();
-      // console.log('Workflow API Response:', result);
+      const response = await fetch(
+        'https://agent-x.myhexin.com/v1/workflows/run',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: 'Bearer app-5sqQbt4CedbJ70MVoKKamYaQ',
+          },
+          body: JSON.stringify(apiPayload),
+        },
+      );
+
+      const result = await response.json();
+      console.log('Workflow API Response:', result);
       // Handle success/error based on the response here
       // Simulate API call with mock data
-      const result: any = await new Promise((resolve) => {
-        setTimeout(() => {
-          resolve(mockData.data.outputs);
-        }, 1000); // 1-second delay to simulate network
-      });
+      // const result: any = await new Promise((resolve) => {
+      //   setTimeout(() => {
+      //     resolve(mockData.data.outputs);
+      //   }, 1000); // 1-second delay to simulate network
+      // });
 
-      console.log('Workflow API Response:', result);
+      console.log('Workflow API Response:', result.data);
 
-      if (result) {
-        if (result.final_config) {
+      if (result.data) {
+        if (result.data.outputs) {
+          const { outputs } = result.data;
           try {
             const formattedConfig = JSON.stringify(
-              JSON.parse(result.final_config),
+              JSON.parse(outputs.final_config),
               null,
               2,
             );
@@ -180,10 +181,8 @@ function ControlPanel({
 
             // 拼接结果地址
             // 海外地址
-            // https://dreamfaceapp.com/activity/weekly.html?darkMode=true&hideTitleBar=true&hashData=80acd651dc964e659cee9e284c11de47
             const overseasUrl = `https://dreamfaceapp.com/activity/weekly.html?darkMode=true&hideTitleBar=true&hashData=${hashWithoutJson}`;
             // 国内地址
-            // https://aidreamface.com/activity/weekly.html?darkMode=true&hideTitleBar=true&hashData=80acd651dc964e659cee9e284c11de47
             const domesticUrl = `https://aidreamface.com/activity/weekly.html?darkMode=true&hideTitleBar=true&hashData=${hashWithoutJson}`;
             // 将结果复制到剪贴板
             navigator.clipboard.writeText(
